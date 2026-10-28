@@ -1,0 +1,184 @@
+
+#include <stdio.h>
+#include <string.h>
+
+#define TOTAL_PRODUTOS 10
+
+// Estrutura que representa um produto do supermercado.
+typedef struct {
+    char nome[40];
+    float preco;
+} Produto;
+
+// Exibe a lista de produtos e seus respectivos preços.
+void exibirProdutos(Produto produtos[], int quantidade) {
+    printf("\n%-25s %s\n", "PRODUTO", "PRECO (R$)");
+    printf("------------------------------------------\n");
+
+    for (int i = 0; i < quantidade; i++) {
+        printf("%-25s R$ %8.2f\n",
+               produtos[i].nome, produtos[i].preco);
+    }
+}
+
+// Bubble Sort: compara elementos vizinhos e troca suas
+// posicoes quando estao fora de ordem.
+// A cada passagem, o maior preco restante vai para o final.
+void bubbleSort(Produto produtos[], int quantidade) {
+    for (int i = 0; i < quantidade - 1; i++) {
+        int trocou = 0;
+
+        for (int j = 0; j < quantidade - 1 - i; j++) {
+            if (produtos[j].preco > produtos[j + 1].preco) {
+                Produto temp = produtos[j];
+                produtos[j] = produtos[j + 1];
+                produtos[j + 1] = temp;
+
+                trocou = 1;
+            }
+        }
+
+        // Se nao houve troca, a lista ja esta ordenada.
+        if (!trocou) {
+            break;
+        }
+    }
+}
+
+// Funcao auxiliar do Quick Sort.
+// Escolhe o ultimo preco como pivo e separa os produtos
+// menores ou iguais ao pivo dos produtos maiores.
+int particionar(Produto produtos[], int inicio, int fim) {
+    float pivo = produtos[fim].preco;
+    int i = inicio - 1;
+
+    for (int j = inicio; j < fim; j++) {
+        if (produtos[j].preco <= pivo) {
+            i++;
+
+            Produto temp = produtos[i];
+            produtos[i] = produtos[j];
+            produtos[j] = temp;
+        }
+    }
+
+    // Coloca o pivo na sua posicao definitiva.
+    Produto temp = produtos[i + 1];
+    produtos[i + 1] = produtos[fim];
+    produtos[fim] = temp;
+
+    return i + 1;
+}
+
+// Quick Sort: utiliza divisao e conquista.
+// Particiona a lista ao redor de um pivo e ordena
+// recursivamente as partes esquerda e direita.
+void quickSort(Produto produtos[], int inicio, int fim) {
+    if (inicio < fim) {
+        int posicaoPivo = particionar(produtos, inicio, fim);
+
+        quickSort(produtos, inicio, posicaoPivo - 1);
+        quickSort(produtos, posicaoPivo + 1, fim);
+    }
+}
+
+int main(void) {
+    // Conjunto inicial com 10 produtos do supermercado.
+    Produto produtosOriginais[TOTAL_PRODUTOS] = {
+        {"Arroz", 28.90},
+        {"Feijao", 8.50},
+        {"Macarrao", 5.99},
+        {"Leite", 4.79},
+        {"Cafe", 18.90},
+        {"Acucar", 4.25},
+        {"Oleo", 7.49},
+        {"Farinha", 6.30},
+        {"Biscoito", 3.89},
+        {"Detergente", 2.99}
+    };
+
+    // Copias independentes para os dois algoritmos.
+    Produto produtosBubble[TOTAL_PRODUTOS];
+    Produto produtosQuick[TOTAL_PRODUTOS];
+
+    memcpy(produtosBubble, produtosOriginais,
+           sizeof(produtosOriginais));
+    memcpy(produtosQuick, produtosOriginais,
+           sizeof(produtosOriginais));
+
+    int opcao;
+
+    do {
+        printf("\n===== ORGANIZADOR DE PRECOS =====\n");
+        printf("1 - Exibir produtos originais\n");
+        printf("2 - Ordenar com Bubble Sort\n");
+        printf("3 - Ordenar com Quick Sort\n");
+        printf("4 - Comparar os dois algoritmos\n");
+        printf("0 - Sair\n");
+        printf("Escolha uma opcao: ");
+
+        if (scanf("%d", &opcao) != 1) {
+            printf("\nEntrada invalida. Encerrando o programa.\n");
+            return 1;
+        }
+
+        switch (opcao) {
+            case 1:
+                printf("\n--- Produtos antes da ordenacao ---\n");
+                exibirProdutos(produtosOriginais,
+                               TOTAL_PRODUTOS);
+                break;
+
+            case 2:
+                // Restaura os dados originais antes de ordenar.
+                memcpy(produtosBubble, produtosOriginais,
+                       sizeof(produtosOriginais));
+
+                bubbleSort(produtosBubble, TOTAL_PRODUTOS);
+
+                printf("\n--- Resultado do Bubble Sort ---\n");
+                exibirProdutos(produtosBubble, TOTAL_PRODUTOS);
+                break;
+
+            case 3:
+                // Usa exatamente os mesmos dados iniciais.
+                memcpy(produtosQuick, produtosOriginais,
+                       sizeof(produtosOriginais));
+
+                quickSort(produtosQuick, 0,
+                          TOTAL_PRODUTOS - 1);
+
+                printf("\n--- Resultado do Quick Sort ---\n");
+                exibirProdutos(produtosQuick, TOTAL_PRODUTOS);
+                break;
+
+            case 4:
+                // Executa ambos a partir da mesma lista original.
+                memcpy(produtosBubble, produtosOriginais,
+                       sizeof(produtosOriginais));
+                memcpy(produtosQuick, produtosOriginais,
+                       sizeof(produtosOriginais));
+
+                bubbleSort(produtosBubble, TOTAL_PRODUTOS);
+                quickSort(produtosQuick, 0,
+                          TOTAL_PRODUTOS - 1);
+
+                printf("\n--- Bubble Sort ---\n");
+                exibirProdutos(produtosBubble, TOTAL_PRODUTOS);
+
+                printf("\n--- Quick Sort ---\n");
+                exibirProdutos(produtosQuick, TOTAL_PRODUTOS);
+                break;
+
+            case 0:
+                printf("\nPrograma encerrado.\n");
+                break;
+
+            default:
+                printf("\nOpcao invalida. Tente novamente.\n");
+        }
+
+    } while (opcao != 0);
+
+    return 0;
+}
